@@ -19,8 +19,10 @@ module Helpers =
 [<AutoOpen>]
 module FsUnit =
 
-    let inline writeLine s = TestContext.WriteLine(sprintf "%A" s)
+    let inline writeLine s = TestContext.WriteLine(sprintf "%A%A" s s)
     let inline writeLineS (s: string) = TestContext.WriteLine(s)
+    let inline writeLinef<'a> (format: Printf.StringFormat<'a -> string>) s =
+        TestContext.WriteLine(sprintf format s)
 
     let toTask computation : Task = Async.StartAsTask computation :> _
 
@@ -65,12 +67,12 @@ module Result =
         | Result.Error err -> raise (AssertionException($"Should be %A{expected} but there is an error: %A{err}"))
 
     [<DebuggerStepThrough>]
-    let inline errorShouldBe expected = function
+    let inline shouldBeError expected = function
         | Result.Ok ok -> raise (AssertionException($"Error should be %A{expected} but there is an ok: %A{ok}"))
         | Result.Error err -> err |> FsUnit.shouldL be expected ""
 
     [<DebuggerStepThrough>]
-    let inline errorShould ``constraint`` expected = function
+    let inline shouldError ``constraint`` expected = function
         | Result.Ok ok -> raise (AssertionException($"Error should be %A{expected} but there is an ok: %A{ok}"))
         | Result.Error err -> err |> FsUnit.shouldL ``constraint`` expected ""
 
